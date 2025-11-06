@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 import psutil
 from typing import Dict, Any
 import time
+import subprocess
+import json
 
 from .podman_utils import list_containers, container_stats
 
@@ -66,10 +68,55 @@ async def system_metrics() -> Dict[str, Any]:
         },
     }
 
+@app.get("/api/cpu")
+def get_cpu_usage():
+    # psutil returns list of percentages per core
+    per_core = psutil.cpu_percent(percpu=True)
+    overall = sum(per_core) / len(per_core)
+    return {"overall": overall, "cores": per_core}
+
+@app.get("/")
+def root():
+    return {"message": "Backend is running 🚀"}
+
+@app.get("/api/memory")
+def get_memory_usage():
+    mem = psutil.virtual_memory()
+    return {"total": mem.total, "used": mem.used, "percent": mem.percent}
+
 
 @app.get("/api/containers")
-async def containers():
-    """Return running containers and stats from Podman."""
-    conts = list_containers()
-    stats = container_stats()
-    return {"list": conts, "stats": stats}
+def get_containers():
+    try:
+        # Get Podman stats in JSON format
+        result = subprocess.run(
+            ["podman", "stats", "--no-stream", "--format", "json"],
+            capture_output=True, text=True
+        )
+
+        if result.returncode != 0:
+            return {"error": result.stderr}
+
+        if not result.stdout.strip():
+            return {"containers": []}
+
+        stats = json.loads(result.stdout)
+        if isinstance(stats, dict):
+            stats = [stats]
+
+        containers = []
+        for s in stats:
+            # clean % signs and convert to float
+            cpu = s.get("cpu_percent", "0").replace("%", "").strip()
+            mem = s.get("mem_percent", "0").replace("%", "").strip()
+            containers.append({
+                "name": s.get("name"),
+                "image": s.get("image", "unknown"),
+                "cpu_percent": float(cpu) if cpu else 0.0,
+                "mem_percent": float(mem) if mem else 0.0,
+            })
+
+        return {"containers": containers}
+
+    except Exception as e:
+        return {"error": str(e)}
