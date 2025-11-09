@@ -120,3 +120,22 @@ def get_containers():
 
     except Exception as e:
         return {"error": str(e)}
+
+@app.post("/api/containers/{container_name}/start")
+def start_container(container_name: str):
+    """Start a stopped container."""
+    try:
+        subprocess.run(["podman", "start", container_name], check=True)
+        return {"message": f"Container '{container_name}' started successfully."}
+    except subprocess.CalledProcessError as e:
+        return {"error": f"Failed to start container '{container_name}': {e}"}
+
+
+@app.post("/api/containers/{container_name}/stop")
+def stop_container(container_name: str):
+    """Stop a running container."""
+    try:
+        subprocess.run(["podman", "stop", container_name], check=True)
+        return {"message": f"Container '{container_name}' stopped successfully."}
+    except subprocess.CalledProcessError as e:
+        return {"error": f"Failed to stop container '{container_name}': {e}"}
