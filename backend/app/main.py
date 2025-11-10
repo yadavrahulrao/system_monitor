@@ -139,3 +139,68 @@ def stop_container(container_name: str):
         return {"message": f"Container '{container_name}' stopped successfully."}
     except subprocess.CalledProcessError as e:
         return {"error": f"Failed to stop container '{container_name}': {e}"}
+
+@app.get("/api/memory")
+def get_memory():
+    mem = psutil.virtual_memory()
+    return {
+        "total": round(mem.total / (1024 ** 3), 2),   # in GB
+        "used": round(mem.used / (1024 ** 3), 2),     # in GB
+        "percent": mem.percent
+    }
+
+
+prev_net = psutil.net_io_counters()
+prev_time = time.time()
+
+
+@app.get("/api/network")
+def get_network():
+    global prev_net, prev_time
+    curr_net = psutil.net_io_counters()
+    curr_time = time.time()
+
+    # Calculate bytes per second since last call
+    time_diff = curr_time - prev_time
+    if time_diff == 0:
+        return {"upload": 0, "download": 0}
+
+    upload_speed = (curr_net.bytes_sent - prev_net.bytes_sent) / time_diff
+    download_speed = (curr_net.bytes_recv - prev_net.bytes_recv) / time_diff
+
+    # Update previous counters
+    prev_net = curr_net
+    prev_time = curr_time
+
+    # Convert to Kbps
+    upload_kbps = round(upload_speed / 1024, 2)
+    download_kbps = round(download_speed / 1024, 2)
+
+    return {"upload": upload_kbps, "download": download_kbps}
+
+
+
+prev_disk = psutil.disk_io_counters()
+prev_disk_time = time.time()
+
+@app.get("/api/disk")
+def get_disk_io():
+    global prev_disk, prev_disk_time
+    curr_disk = psutil.disk_io_counters()
+    curr_time = time.time()
+
+    time_diff = curr_time - prev_disk_time
+    if time_diff == 0:
+        return {"read": 0, "write": 0}
+
+    read_speed = (curr_disk.read_bytes - prev_disk.read_bytes) / time_diff
+    write_speed = (curr_disk.write_bytes - prev_disk.write_bytes) / time_diff
+
+    prev_disk = curr_disk
+    prev_disk_time = curr_time
+
+    # Convert to KB/s
+    read_kbps = round(read_speed / 1024, 2)
+    write_kbps = round(write_speed / 1024, 2)
+
+    return {"read": read_kbps, "write": write_kbps}

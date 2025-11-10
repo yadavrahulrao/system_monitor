@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ContainerMonitor from "./components/ContainerMonitor";
+import ContainerMemoryChart from "./components/ContainerMemoryChart";
+import SystemMemoryChart from "./components/SystemMemoryChart";
+import SystemNetworkChart from "./components/SystemNetworkChart";
+import SystemDiskChart from "./components/SystemDiskChart";
 import {
   LineChart,
   Line,
@@ -82,6 +86,11 @@ export default function App() {
 
       {/* 🧱 Podman Container Monitor */}
       <ContainerMonitor />
+      {/* Memory monitoring chart */}
+      <ContainerMemoryChart />
+      <SystemMemoryChart />
+      <SystemNetworkChart />
+      <SystemDiskChart /> 
     </div>
   );
 }
