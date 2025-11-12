@@ -14,9 +14,7 @@ export default function ContainerMemoryChart() {
         if (json.containers) {
           setContainers(json.containers);
 
-          const newEntry = {
-            time: new Date().toLocaleTimeString(),
-          };
+          const newEntry = { time: new Date().toLocaleTimeString() };
           json.containers.forEach((c) => {
             newEntry[c.name] = parseFloat(c.mem_percent || 0);
           });
@@ -33,30 +31,50 @@ export default function ContainerMemoryChart() {
     return () => clearInterval(interval);
   }, []);
 
-  return (
-    <div className="p-4 rounded-2xl shadow bg-gray-900 border border-gray-700">
-      <h2 className="text-xl font-semibold mb-3 text-gray-100">
-        📉 Container Memory Usage (%)
-      </h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-          <XAxis dataKey="time" stroke="#ccc" />
-          <YAxis domain={[0, 100]} stroke="#ccc" />
-          <Tooltip />
-          <Legend />
-          {containers.map((c, i) => (
-            <Line
-              key={c.name}
-              type="monotone"
-              dataKey={c.name}
-              stroke={`hsl(${(i * 60) % 360}, 70%, 60%)`}
-              dot={false}
-              strokeWidth={2}
-            />
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="p-2 bg-dark text-light border border-secondary rounded">
+          <p className="mb-1"><strong>Time:</strong> {label}</p>
+          {payload.map((item, i) => (
+            <p key={i} className="mb-0">
+              <strong>{item.name}:</strong> {item.value}%
+            </p>
           ))}
-        </LineChart>
-      </ResponsiveContainer>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="card bg-dark text-light border border-secondary shadow-lg mb-4">
+      <div className="card-body">
+        <h2 className="card-title text-warning fw-bold text-center mb-4">
+          📉 Container Memory Usage (%)
+        </h2>
+        <div style={{ width: "100%", height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+              <XAxis dataKey="time" stroke="#ccc" />
+              <YAxis domain={[0, 100]} stroke="#ccc" />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              {containers.map((c, i) => (
+                <Line
+                  key={c.name}
+                  type="monotone"
+                  dataKey={c.name}
+                  stroke={`hsl(${(i * 60) % 360}, 70%, 60%)`}
+                  dot={false}
+                  strokeWidth={2}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }

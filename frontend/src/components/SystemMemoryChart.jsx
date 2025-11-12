@@ -36,34 +36,72 @@ export default function SystemMemoryChart() {
     return () => clearInterval(interval);
   }, []);
 
+  // ✅ Custom tooltip content
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const { percent } = payload[0].payload;
+      return (
+        <div
+          style={{
+            backgroundColor: "#222",
+            border: "1px solid #666",
+            borderRadius: "8px",
+            padding: "8px 12px",
+            color: "#fff",
+          }}
+        >
+          <p className="mb-1">
+            <strong>Time:</strong> {label}
+          </p>
+          <p className="mb-0">
+            <strong>Memory Usage:</strong> {percent}%
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="p-4 bg-gray-900 border border-gray-700 rounded-2xl shadow-md">
-      <h2 className="text-xl font-semibold mb-3 text-gray-100">
-        💾 System Memory Usage (%)
-      </h2>
+    <div className="card bg-dark text-light border border-secondary shadow-lg mb-4">
+      <div className="card-body">
+        <h2 className="card-title text-success fw-bold text-center mb-4">
+          💾 System Memory Usage (%)
+        </h2>
 
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-          <XAxis dataKey="time" stroke="#ccc" />
-          <YAxis domain={[0, 100]} stroke="#ccc" />
-          <Tooltip />
-          <Line
-            type="monotone"
-            dataKey="percent"
-            stroke="#00FFAA"
-            strokeWidth={2}
-            dot={false}
-            name="Memory %"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+        <div style={{ width: "100%", height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+              <XAxis dataKey="time" stroke="#ccc" />
+              <YAxis domain={[0, 100]} stroke="#ccc" />
+              {/* 👇 Use custom tooltip here */}
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="monotone"
+                dataKey="percent"
+                stroke="#00FFAA"
+                strokeWidth={2}
+                dot={false}
+                name="Memory %"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
 
-      {data.length > 0 && (
-        <p className="mt-3 text-sm text-gray-400">
-          Used: {data[data.length - 1].used} GB / {data[data.length - 1].total} GB
-        </p>
-      )}
+        {data.length > 0 && (
+          <p className="text-center text-muted mt-3">
+            Used:{" "}
+            <span className="text-info fw-semibold">
+              {data[data.length - 1].used} GB
+            </span>{" "}
+            /{" "}
+            <span className="text-warning fw-semibold">
+              {data[data.length - 1].total} GB
+            </span>
+          </p>
+        )}
+      </div>
     </div>
   );
 }

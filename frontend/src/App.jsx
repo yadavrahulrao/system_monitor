@@ -19,14 +19,12 @@ export default function App() {
   const [data, setData] = useState([]);
   const [coreCount, setCoreCount] = useState(0);
 
-  // Fetch CPU data every 2 seconds
   useEffect(() => {
     const fetchCPU = async () => {
       try {
         const res = await fetch("/api/cpu");
         const json = await res.json();
 
-        // Build entry for chart
         const entry = {
           time: new Date().toLocaleTimeString(),
         };
@@ -36,7 +34,7 @@ export default function App() {
         });
 
         setCoreCount(json.cores.length);
-        setData((prev) => [...prev.slice(-20), entry]); // keep last 20 samples
+        setData((prev) => [...prev.slice(-20), entry]);
       } catch (err) {
         console.error("Error fetching CPU data:", err);
       }
@@ -48,49 +46,89 @@ export default function App() {
   }, []);
 
   const colors = [
-    "#FF5733", "#33FF57", "#3357FF", "#FF33A1",
-    "#FFD433", "#33FFF5", "#A633FF", "#FF8F33"
+    "#FF5733",
+    "#33FF57",
+    "#3357FF",
+    "#FF33A1",
+    "#FFD433",
+    "#33FFF5",
+    "#A633FF",
+    "#FF8F33",
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6 space-y-10">
-      <h1 className="text-3xl font-bold mb-4 text-green-400 text-center">
-        🧠 System & Podman Monitor
-      </h1>
+    <div className="container-fluid bg-dark text-light py-5">
+      <header className="text-center mb-5">
+        <h1
+          className="display-4 fw-bold text-primary"
+          style={{
+            textShadow:
+              "0 0 20px rgba(59,130,246,0.8), 0 0 40px rgba(37,99,235,0.6)",
+          }}
+        >
+           Container & System Monitoring
+        </h1>
+      </header>
 
       {/* 🧩 CPU Core Usage Monitor */}
-      <div className="bg-gray-800 rounded-2xl p-4 shadow-lg">
-        <h2 className="text-xl mb-3 text-blue-400 font-semibold text-center">
-          CPU Core Usage
-        </h2>
-        <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis dataKey="time" stroke="#aaa" />
-            <YAxis stroke="#aaa" domain={[0, 50]} />
-            <Tooltip />
-            <Legend />
-            {Array.from({ length: coreCount }).map((_, i) => (
-              <Line
-                key={i}
-                type="monotone"
-                dataKey={`core${i}`}
-                stroke={colors[i % colors.length]}
-                dot={false}
-                name={`Core ${i}`}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="card bg-dark border border-secondary shadow-lg mb-5">
+        <div className="card-body">
+          <h2 className="h5 text-center text-info fw-semibold mb-3">
+            CPU Core Usage
+          </h2>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+              <XAxis dataKey="time" stroke="#aaa" />
+              <YAxis stroke="#aaa" domain={[0, 100]} />
+              <Tooltip />
+              <Legend />
+              {Array.from({ length: coreCount }).map((_, i) => (
+                <Line
+                  key={i}
+                  type="monotone"
+                  dataKey={`core${i}`}
+                  stroke={colors[i % colors.length]}
+                  dot={false}
+                  name={`Core ${i}`}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* 🧱 Podman Container Monitor */}
-      <ContainerMonitor />
+      <div className="card bg-dark border border-secondary shadow-lg mb-5">
+        <div className="card-body">
+          <ContainerMonitor />
+        </div>
+      </div>
+
       {/* Memory monitoring chart */}
-      <ContainerMemoryChart />
-      <SystemMemoryChart />
-      <SystemNetworkChart />
-      <SystemDiskChart /> 
+      <div className="card bg-dark border border-secondary shadow-lg mb-5">
+        <div className="card-body">
+          <ContainerMemoryChart />
+        </div>
+      </div>
+
+      <div className="card bg-dark border border-secondary shadow-lg mb-5">
+        <div className="card-body">
+          <SystemMemoryChart />
+        </div>
+      </div>
+
+      <div className="card bg-dark border border-secondary shadow-lg mb-5">
+        <div className="card-body">
+          <SystemNetworkChart />
+        </div>
+      </div>
+
+      <div className="card bg-dark border border-secondary shadow-lg mb-5">
+        <div className="card-body">
+          <SystemDiskChart />
+        </div>
+      </div>
     </div>
   );
 }

@@ -64,64 +64,92 @@ export default function ContainerMonitor() {
     }
   };
 
+  // ✅ Custom Tooltip to show time and container CPU usage
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div
+          className="bg-dark text-light p-2 rounded border border-secondary"
+          style={{ fontSize: "0.85rem" }}
+        >
+          <p className="mb-1 fw-bold text-info">Time: {label}</p>
+          {payload.map((p, index) => (
+            <p key={index} className="mb-0">
+              <span style={{ color: p.stroke }}>{p.name}:</span>{" "}
+              {p.value.toFixed(2)}%
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="bg-gray-800 rounded-2xl p-6 shadow-lg">
-      <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center">
-        🧱 Podman Container Monitor
-      </h2>
+    <div className="card bg-dark text-light shadow-lg border border-secondary mb-4">
+      <div className="card-body">
+        <h2 className="card-title text-warning fw-bold mb-4 text-center">
+          🧱 Podman Container Monitor
+        </h2>
 
-      {containers.length === 0 ? (
-        <p className="text-gray-400">No running containers detected...</p>
-      ) : (
-        <>
-          {containers.map((c, idx) => (
-            <div key={idx} className="mb-4 border-b border-gray-700 pb-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-lg font-semibold">{c.name}</p>
-                  <p>Image: {c.image}</p>
-                  <p>CPU: {c.cpu_percent?.toFixed(2)}%</p>
-                  <p>Memory: {c.mem_percent?.toFixed(2)}%</p>
-                </div>
+        {containers.length === 0 ? (
+          <p className="text-secondary text-center">
+            No running containers detected...
+          </p>
+        ) : (
+          <>
+            {containers.map((c, idx) => (
+              <div
+                key={idx}
+                className="border-bottom border-secondary pb-3 mb-3"
+              >
+                <div className="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p className="h6 text-uppercase fw-semibold">{c.name}</p>
+                    <p className="mb-0">
+                      CPU Usage: {c.cpu_percent?.toFixed(2)}%
+                    </p>
+                    <p className="mb-0">
+                      Memory Usage: {c.mem_percent?.toFixed(2)}%
+                    </p>
+                  </div>
 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleAction(c.name, "start")}
-                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg"
-                  >
-                    ▶ Start
-                  </button>
-                  <button
-                    onClick={() => handleAction(c.name, "stop")}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg"
-                  >
-                    ⏹ Stop
-                  </button>
+                  <div>
+                    <button
+                      onClick={() => handleAction(c.name, "stop")}
+                      className="btn btn-danger btn-sm px-3 py-1"
+                    >
+                      ⏹ Stop
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
 
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#555" />
-              <XAxis dataKey="time" stroke="#aaa" />
-              <YAxis stroke="#aaa" domain={[0, 100]} />
-              <Tooltip />
-              <Legend />
-              {containers.map((c, i) => (
-                <Line
-                  key={c.name}
-                  type="monotone"
-                  dataKey={c.name}
-                  stroke={colors[i % colors.length]}
-                  dot={false}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </>
-      )}
+            <div style={{ width: "100%", height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+                  <XAxis dataKey="time" stroke="#ccc" />
+                  <YAxis stroke="#ccc" domain={[0, 100]} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  {containers.map((c, i) => (
+                    <Line
+                      key={c.name}
+                      type="monotone"
+                      dataKey={c.name}
+                      stroke={colors[i % colors.length]}
+                      dot={false}
+                      strokeWidth={2}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

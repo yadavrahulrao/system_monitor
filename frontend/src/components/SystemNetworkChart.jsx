@@ -34,36 +34,40 @@ export default function SystemNetworkChart() {
     return () => clearInterval(interval);
   }, []);
 
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const { upload, download } = payload[0].payload;
+      return (
+        <div className="p-2 bg-dark text-light border border-secondary rounded">
+          <p className="mb-1"><strong>Time:</strong> {label}</p>
+          <p className="mb-0"><strong>Upload:</strong> {upload} KB/s</p>
+          <p className="mb-0"><strong>Download:</strong> {download} KB/s</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="p-4 bg-gray-900 border border-gray-700 rounded-2xl shadow-md">
-      <h2 className="text-xl font-semibold mb-3 text-gray-100">
-        📡 System Network Usage (KB/s)
-      </h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-          <XAxis dataKey="time" stroke="#ccc" />
-          <YAxis stroke="#ccc" />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="download"
-            stroke="#33FF57"
-            strokeWidth={2}
-            dot={false}
-            name="Download (KB/s)"
-          />
-          <Line
-            type="monotone"
-            dataKey="upload"
-            stroke="#FF5733"
-            strokeWidth={2}
-            dot={false}
-            name="Upload (KB/s)"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+    <div className="card bg-dark text-light border border-secondary shadow-lg mb-4">
+      <div className="card-body">
+        <h2 className="card-title text-primary fw-bold text-center mb-4">
+          📡 System Network Usage (KB/s)
+        </h2>
+        <div style={{ width: "100%", height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#555" />
+              <XAxis dataKey="time" stroke="#ccc" />
+              <YAxis stroke="#ccc" />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Line type="monotone" dataKey="download" stroke="#33FF57" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="upload" stroke="#FF5733" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 }
