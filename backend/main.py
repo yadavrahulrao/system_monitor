@@ -6,7 +6,7 @@ import time
 import subprocess
 import json
 
-from .podman_utils import list_containers, container_stats
+from podman_utils import list_containers, container_stats
 
 app = FastAPI(title="System + Podman Monitor API")
 
