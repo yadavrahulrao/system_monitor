@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useMonitoring } from "../MonitoringContext";
 import {
   LineChart,
   Line,
@@ -12,27 +13,17 @@ import {
 
 export default function SystemNetworkChart() {
   const [data, setData] = useState([]);
+  const { metrics } = useMonitoring();
 
   useEffect(() => {
-    const fetchNetwork = async () => {
-      try {
-        const res = await fetch("/api/network");
-        const json = await res.json();
-        const entry = {
-          time: new Date().toLocaleTimeString(),
-          upload: json.upload,
-          download: json.download,
-        };
-        setData((prev) => [...prev.slice(-30), entry]);
-      } catch (err) {
-        console.error("Error fetching network data:", err);
-      }
+    if (!metrics?.network) return;
+    const entry = {
+      time: new Date(metrics.timestamp * 1000).toLocaleTimeString(),
+      upload: metrics.network.upload,
+      download: metrics.network.download,
     };
-
-    fetchNetwork();
-    const interval = setInterval(fetchNetwork, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    setData((previous) => [...previous.slice(-29), entry]);
+  }, [metrics]);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useMonitoring } from "../MonitoringContext";
 import {
   LineChart,
   Line,
@@ -11,30 +12,18 @@ import {
 
 export default function SystemMemoryChart() {
   const [data, setData] = useState([]);
+  const { metrics } = useMonitoring();
 
   useEffect(() => {
-    const fetchMem = async () => {
-      try {
-        const res = await fetch("/api/memory");
-        const json = await res.json();
-
-        const entry = {
-          time: new Date().toLocaleTimeString(),
-          percent: json.percent,
-          used: json.used,
-          total: json.total,
-        };
-
-        setData((prev) => [...prev.slice(-30), entry]);
-      } catch (err) {
-        console.error("Error fetching memory data:", err);
-      }
+    if (!metrics?.memory) return;
+    const entry = {
+      time: new Date(metrics.timestamp * 1000).toLocaleTimeString(),
+      percent: metrics.memory.percent,
+      used: Number((metrics.memory.used / (1024 ** 3)).toFixed(2)),
+      total: Number((metrics.memory.total / (1024 ** 3)).toFixed(2)),
     };
-
-    fetchMem();
-    const interval = setInterval(fetchMem, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    setData((previous) => [...previous.slice(-29), entry]);
+  }, [metrics]);
 
   // ✅ Custom tooltip content
   const CustomTooltip = ({ active, payload, label }) => {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useMonitoring } from "../MonitoringContext";
 import {
   LineChart,
   Line,
@@ -12,27 +13,17 @@ import {
 
 export default function SystemDiskChart() {
   const [data, setData] = useState([]);
+  const { metrics } = useMonitoring();
 
   useEffect(() => {
-    const fetchDisk = async () => {
-      try {
-        const res = await fetch("/api/disk");
-        const json = await res.json();
-        const entry = {
-          time: new Date().toLocaleTimeString(),
-          read: json.read,
-          write: json.write,
-        };
-        setData((prev) => [...prev.slice(-30), entry]);
-      } catch (err) {
-        console.error("Error fetching disk data:", err);
-      }
+    if (!metrics?.disk) return;
+    const entry = {
+      time: new Date(metrics.timestamp * 1000).toLocaleTimeString(),
+      read: metrics.disk.read,
+      write: metrics.disk.write,
     };
-
-    fetchDisk();
-    const interval = setInterval(fetchDisk, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    setData((previous) => [...previous.slice(-29), entry]);
+  }, [metrics]);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

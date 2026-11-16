@@ -1,0 +1,35 @@
+[
+  {
+    "name": "High CPU usage",
+    "metric": "cpu_percent",
+    "operator": ">=",
+    "threshold": 85.0,
+    "severity": "warning",
+    "enabled": true,
+    "cooldown_seconds": 300,
+    "id": "default-cpu",
+    "created_at": 1794814954
+  },
+  {
+    "name": "High memory usage",
+    "metric": "memory_percent",
+    "operator": ">=",
+    "threshold": 90.0,
+    "severity": "critical",
+    "enabled": true,
+    "cooldown_seconds": 300,
+    "id": "default-memory",
+    "created_at": 1794814954
+  },
+  {
+    "name": "High disk usage",
+    "metric": "disk_percent",
+    "operator": ">=",
+    "threshold": 90.0,
+    "severity": "warning",
+    "enabled": true,
+    "cooldown_seconds": 300,
+    "id": "default-disk",
+    "created_at": 1794814954
+  }
+]
